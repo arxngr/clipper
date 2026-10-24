@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2563eb" />
+    <meta
+      name="description"
+      content="Download videos, extract MP3 audio, and save multiple clips in one ZIP."
+    />
+    <title>Video Downloader</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" type="module"></script>
+  </head>
+  <body>
+    <svg
+      class="icon-defs"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 3v12m-4-4 4 4 4-4M5 16v5h14v-5" />
+      </symbol>
+      <symbol id="i-link" viewBox="0 0 24 24">
+        <path
+          d="m10 13 4-4m-6 6-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 2 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"
+          transform="translate(1 1)"
+        />
+      </symbol>
+      <symbol id="i-film" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="3" />
+        <path d="M7 4v16m10-16v16M3 9h4m-4 6h4m10-6h4m-4 6h4" />
+      </symbol>
+      <symbol id="i-music" viewBox="0 0 24 24">
+        <path d="M9 17V5l11-2v12M9 9l11-2" />
+        <ellipse cx="6" cy="18" rx="3" ry="3" />
+        <ellipse cx="17" cy="16" rx="3" ry="3" />
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24">
+        <path d="m5 12 4 4L19 6" />
+      </symbol>
+      <symbol id="i-close" viewBox="0 0 24 24">
+        <path d="m6 6 12 12M6 18 18 6" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol id="i-scissors" viewBox="0 0 24 24">
+        <circle cx="6" cy="6" r="3" />
+        <circle cx="6" cy="18" r="3" />
+        <path d="m8 8 13 13M8 16 21 3" />
+      </symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24">
+        <path
+          d="M3 7V5a2 2 0 0 1 2-2h5l3 3h6a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"
+        />
+        <path d="M3 8h18" />
+      </symbol>
+    </svg>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Video Downloader home"
+        ><span class="brand-mark"
+          ><svg class="icon"><use href="#i-download" /></svg></span
+        >Video Downloader</a
+      >
+      <span id="connection" class="connection"
+        ><span class="status-dot"></span
+        ><span id="connection-text">Connecting</span></span
+      >
+    </header>
+    <main>
+      <section class="intro">
+        <div class="intro-label">YOUR MEDIA, ON YOUR MACHINE</div>
+        <h1>One video. <span>Any part of it.</span></h1>
+        <p>
+          Download the whole thing, pick a few clips, or keep just the audio.
+        </p>
+        <div class="platforms">
+          <span>YouTube</span><span>Instagram</span><span>TikTok</span
+          ><span class="more-platforms">and more</span>
+        </div>
+      </section>
+      <div id="setup-notice" class="notice" hidden>
+        Media tools need setup. Run <code>python scripts/setup_tools.py</code>,
+        then restart the app.
+      </div>
+      <div class="workspace">
+        <section class="editor-card" aria-label="Create a download">
+          <form id="download-form">
+            <div class="field-section source-section">
+              <label class="section-title" for="url">Video link</label>
+              <div class="url-field">
+                <svg class="icon"><use href="#i-link" /></svg
+                ><input
+                  id="url"
+                  name="url"
+                  type="url"
+                  required
+                  maxlength="4096"
+                  placeholder="Paste a video URL"
+                  autocomplete="off"
+                  spellcheck="false"
+                /><button id="inspect-button" type="button">Get details</button>
+              </div>
+              <p class="field-hint">
+                Paste a link from YouTube, Instagram, TikTok, or another
+                supported site.
+              </p>
+              <div id="source-preview" class="source-preview" hidden>
+                <div class="preview-image">
+                  <svg class="icon"><use href="#i-film" /></svg>
+                </div>
+                <div class="preview-copy">
+                  <span id="source-platform"></span>
+                  <h2 id="source-title"></h2>
+                  <span id="source-duration"></span>
+                </div>
+                <svg class="icon source-check"><use href="#i-check" /></svg>
+              </div>
+            </div>
+
+            <div class="field-section">
+              <span class="section-title">Save as</span>
+              <div
+                class="format-options"
+                role="group"
+                aria-label="Output format"
+              >
+                <button
+                  class="format-card selected"
+                  type="button"
+                  data-format="mp4"
+                  aria-pressed="true"
+                >
+                  <svg class="icon"><use href="#i-film" /></svg
+                  ><span
+                    ><strong>Video</strong
+                    ><small>MP4 · Picture and sound</small></span
+                  ><span class="radio-dot"></span></button
+                ><button
+                  class="format-card"
+                  type="button"
+                  data-format="mp3"
+                  aria-pressed="false"
+                >
+                  <svg class="icon"><use href="#i-music" /></svg
+                  ><span
+                    ><strong>Audio</strong><small>MP3 · Sound only</small></span
+                  ><span class="radio-dot"></span>
+                </button>
+              </div>
+            </div>
+
+            <div class="field-section clip-section">
+              <div class="section-heading">
+                <span class="section-title" id="clips-heading"
+                  >What do you want to save?</span
+                >
+              </div>
+              <div
+                class="segmented"
+                role="group"
+                aria-labelledby="clips-heading"
+              >
+                <button
+                  id="full-mode"
+                  class="active"
+                  type="button"
+                  data-range-mode="full"
+                  aria-pressed="true"
+                >
+                  Full video</button
+                ><button
+                  id="clips-mode"
+                  type="button"
+                  data-range-mode="clips"
+                  aria-pressed="false"
+                >
+                  <svg class="icon"><use href="#i-scissors" /></svg>Select clips
+                </button>
+              </div>
+              <div id="range-controls" hidden>
+                <div class="range-column-labels" aria-hidden="true">
+                  <span>CLIP</span><span>FROM</span><span></span><span>TO</span
+                  ><span></span>
+                </div>
+                <div id="range-list"></div>
+                <button id="add-range" type="button" class="add-range">
+                  <svg class="icon"><use href="#i-plus" /></svg>Add another
+                  range
+                </button>
+                <p class="field-hint" id="time-hint">
+                  Use mm:ss or hh:mm:ss. You can also enter 2m or 120s.
+                </p>
+                <p class="zip-hint" id="zip-hint" hidden>
+                  <svg class="icon"><use href="#i-folder" /></svg>Each range is
+                  a separate clip. You’ll get them together in one ZIP.
+                </p>
+              </div>
+            </div>
+
+            <details class="quality-settings">
+              <summary>
+                Quality settings<span id="quality-caption">1080p</span>
+              </summary>
+              <div class="quality-row">
+                <label id="quality-label" for="quality">Video resolution</label
+                ><select id="quality">
+                  <option value="360">Up to 360p</option>
+                  <option value="480">Up to 480p</option>
+                  <option value="720">Up to 720p HD</option>
+                  <option value="1080" selected>Up to 1080p Full HD</option>
+                  <option value="2160">Up to 2160p 4K</option></select
+                ><label id="bitrate-label" for="bitrate" hidden
+                  >Audio bitrate</label
+                ><select id="bitrate" hidden>
+                  <option value="128">128 kbps</option>
+                  <option value="192" selected>192 kbps</option>
+                  <option value="320">320 kbps</option>
+                </select>
+              </div>
+              <p class="field-hint">Original aspect ratio. No upscaling.</p>
+            </details>
+            <p id="form-error" class="form-error" role="alert" hidden></p>
+          </form>
+        </section>
+
+        <aside class="output-card" aria-labelledby="output-heading">
+          <div class="output-card-top">
+            <span class="output-symbol"
+              ><svg id="output-icon" class="icon">
+                <use href="#i-film" /></svg></span
+            ><span class="output-tag" id="file-extension">MP4</span>
+            <h2 id="output-heading">Ready when you are.</h2>
+            <p id="output-description">
+              Choose your format and the parts you want to keep.
+            </p>
+          </div>
+          <div class="output-card-bottom">
+            <dl class="output-details">
+              <div>
+                <dt>Format</dt>
+                <dd id="summary-format">MP4 video</dd>
+              </div>
+              <div>
+                <dt>Quality</dt>
+                <dd id="summary-quality">Up to 1080p</dd>
+              </div>
+              <div>
+                <dt>Files</dt>
+                <dd id="summary-files">1 video</dd>
+              </div>
+              <div>
+                <dt>Total duration</dt>
+                <dd id="summary-duration">Full video</dd>
+              </div>
+            </dl>
+            <button
+              id="submit-button"
+              class="primary-button"
+              type="submit"
+              form="download-form"
+            >
+              <svg class="icon"><use href="#i-download" /></svg
+              ><span>Start download</span>
+            </button>
+            <p class="output-note">Processed locally. Saved to your machine.</p>
+          </div>
+        </aside>
+      </div>
+
+      <section class="library" aria-labelledby="library-heading">
+        <div class="library-heading">
+          <h2 id="library-heading">Downloads <span id="job-count">0</span></h2>
+          <span id="queue-status">Queue is empty</span>
+        </div>
+        <div id="jobs" class="job-list"></div>
+        <div id="empty-state" class="empty-state">
+          <span class="empty-icon"
+            ><svg class="icon"><use href="#i-download" /></svg
+          ></span>
+          <div>
+            <h3>No downloads yet</h3>
+            <p>Your files and download progress will appear here.</p>
+          </div>
+        </div>
+      </section>
+      <footer>
+        <span>Runs locally. Your files stay with you.</span
+        ><span>Download content you have permission to save.</span>
+      </footer>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <template id="range-template"
+      ><div class="range-row">
+        <span class="clip-number"></span
+        ><input
+          class="range-start"
+          placeholder="0:00"
+          inputmode="text"
+          aria-describedby="time-hint"
+        /><span class="range-arrow" aria-hidden="true">→</span
+        ><input
+          class="range-end"
+          placeholder="End of video"
+          inputmode="text"
+          aria-describedby="time-hint"
+        /><button type="button" class="remove-range">
+          <svg class="icon"><use href="#i-close" /></svg>
+        </button></div
+    ></template>
+    <template id="job-template"
+      ><article class="job">
+        <div class="job-type">
+          <svg class="icon"><use href="#i-film" /></svg>
+        </div>
+        <div class="job-body">
+          <div class="job-title-row">
+            <h3></h3>
+            <span class="job-badge"></span>
+          </div>
+          <p class="job-meta"></p>
+          <div class="job-progress" hidden><div></div></div>
+          <p class="job-error" hidden></p>
+        </div>
+        <div class="job-actions">
+          <a class="save-button" hidden
+            ><svg class="icon"><use href="#i-download" /></svg
+            ><span>Save file</span></a
+          ><button
+            type="button"
+            class="cancel-button"
+            aria-label="Cancel download"
+            hidden
+          >
+            <svg class="icon"><use href="#i-close" /></svg></button
+          ><button type="button" class="retry-button" hidden>Retry</button>
+        </div>
+      </article></template
+    >
+  </body>
+</html>
