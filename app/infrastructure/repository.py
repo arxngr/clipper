@@ -36,10 +36,6 @@ class InMemoryJobRepository:
         with self._lock:
             return deepcopy(self._jobs.get(job_id))
 
-    def list(self) -> list[dict]:
-        with self._lock:
-            return [deepcopy(job) for job in list(self._jobs.values())[-100:][::-1]]
-
     def update(self, job_id: str, **changes) -> None:
         with self._lock:
             if job_id in self._jobs:

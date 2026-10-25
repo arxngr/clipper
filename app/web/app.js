@@ -46,7 +46,8 @@ function showError(message) {
 
 function updateSubmitButton() {
   $("#submit-button").disabled =
-    !state.ready || state.submitting || !state.validRanges || !$("#url").value.trim();
+    !state.ready || state.submitting || !state.validRanges || !$("#url").value.trim()
+    || state.jobs.some((job) => !terminal.has(job.status));
 }
 
 function requestBody() {
@@ -258,9 +259,9 @@ $("#download-form").addEventListener("submit", async (event) => {
     const body = requestBody();
     state.submitting = true;
     updateSummary();
-    await api("/jobs", { method: "POST", body: JSON.stringify(body) });
-    toast("Added to the download queue.");
-    await refreshJobs();
+    const job = await api("/jobs", { method: "POST", body: JSON.stringify(body) });
+    state.jobs = [job];
+    renderJobs();
   } catch (error) {
     showError(error.message);
   } finally {
@@ -348,12 +349,8 @@ function renderJobs() {
         `[data-job-id="${focusedId}"] [data-action="${focusedAction}"]`,
       )
       ?.focus({ preventScroll: true });
-  $("#empty-state").hidden = state.jobs.length > 0;
-  $("#job-count").textContent = String(state.jobs.length);
-  const active = state.jobs.filter((job) => !terminal.has(job.status)).length;
-  $("#queue-status").textContent = active
-    ? `${active} ${active === 1 ? "download" : "downloads"} in progress`
-    : "No active downloads";
+  $("#current-download").hidden = state.jobs.length === 0;
+  updateSubmitButton();
 }
 
 $("#jobs").addEventListener("click", async (event) => {
@@ -366,8 +363,11 @@ $("#jobs").addEventListener("click", async (event) => {
   try {
     if (button.dataset.action === "cancel")
       await api(`/jobs/${job.id}/cancel`, { method: "POST" });
-    else
-      await api("/jobs", { method: "POST", body: JSON.stringify(job.request) });
+    else {
+      const retried = await api("/jobs", { method: "POST", body: JSON.stringify(job.request) });
+      state.jobs = [retried];
+      renderJobs();
+    }
     await refreshJobs();
   } catch (error) {
     toast(error.message);
@@ -376,7 +376,8 @@ $("#jobs").addEventListener("click", async (event) => {
 });
 
 async function refreshJobs() {
-  const jobs = await api("/jobs");
+  if (!state.jobs.length || state.jobs.every((job) => terminal.has(job.status))) return;
+  const jobs = await Promise.all(state.jobs.map((job) => api(`/jobs/${job.id}`)));
   if (JSON.stringify(jobs) !== JSON.stringify(state.jobs)) {
     state.jobs = jobs;
     renderJobs();

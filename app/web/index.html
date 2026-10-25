@@ -8,10 +8,10 @@
       name="description"
       content="Download videos, extract MP3 audio, and save multiple clips in one ZIP."
     />
-    <title>Video Downloader</title>
-    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/static/styles.css?v=6" />
-    <script src="/static/app.js?v=3" type="module"></script>
+    <title>Clipper</title>
+    <link rel="icon" href="/static/favicon.svg?v=2" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/styles.css?v=8" />
+    <script src="/static/app.js?v=4" type="module"></script>
   </head>
   <body>
     <svg
@@ -59,16 +59,15 @@
       </symbol>
     </svg>
     <header class="site-header">
-      <a class="brand" href="/" aria-label="Video Downloader home"
+      <a class="brand" href="/" aria-label="Clipper home"
         ><span class="brand-mark"
-          ><svg class="icon"><use href="#i-download" /></svg></span
-        >Video Downloader</a
+          ><svg class="icon"><use href="#i-scissors" /></svg></span
+        >Clipper</a
       >
     </header>
     <main>
       <section class="intro">
-        <h1>Download a <span>video.</span></h1>
-        <p>Save the full video, a clip, or audio.</p>
+        <h1>New download</h1>
       </section>
       <div id="setup-notice" class="notice" hidden>
         Media tools need setup. Run <code>python scripts/setup_tools.py</code>,
@@ -217,20 +216,8 @@
         </section>
       </div>
 
-      <section class="library" aria-labelledby="library-heading">
-        <div class="library-heading">
-          <h2 id="library-heading">Downloads <span id="job-count">0</span></h2>
-          <span id="queue-status">No active downloads</span>
-        </div>
+      <section id="current-download" class="current-download" aria-label="Current download" hidden>
         <div id="jobs" class="job-list"></div>
-        <div id="empty-state" class="empty-state">
-          <span class="empty-icon"
-            ><svg class="icon"><use href="#i-download" /></svg
-          ></span>
-          <div>
-            <h3>Your downloads will appear here</h3>
-          </div>
-        </div>
       </section>
       <footer>
         <span>Saved on this device</span

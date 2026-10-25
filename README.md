@@ -1,4 +1,4 @@
-# Video Downloader
+# Clipper
 
 A Python + FastAPI app for downloading full videos, separate clips, or MP3 audio from a browser UI.
 
@@ -27,7 +27,7 @@ On macOS/Linux, use `.venv/bin/python` instead and install **FFmpeg (including f
 
 Times accept `2:30`, `01:02:30`, `2m`, or `150s`. Plain numbers mean seconds. Leave **To** blank to continue to the end. Quality options are under **Quality**.
 
-The queue runs one download at a time and supports cancellation and retries. Download history is kept in memory for the current server session and clears when the app restarts. Save your files before restarting; previous downloads will no longer appear in the UI. Files remain in `data/downloads/` until you remove them locally; temporary files are cleaned after each job. Existing `data/jobs.sqlite3` files from older versions are no longer used.
+The queue runs one download at a time and supports cancellation and retries. There is no download history or shared download list. Only the current download appears on the page; starting another replaces it, and refreshing clears it. A browser session cookie restricts status, cancellation, and file access to the browser that created the download. Save your file before refreshing or restarting. Job state stays in server memory; files remain in `data/downloads/` until you remove them locally, and temporary files are cleaned after each job. Existing `data/jobs.sqlite3` files from older versions are no longer used.
 
 ## Site support and clipping
 
@@ -36,7 +36,7 @@ The queue runs one download at a time and supports cancellation and retries. Dow
 - Accurate trimming downloads the source once and uses FFmpeg to encode each selected interval. A short clip from a long video can therefore require downloading the entire source. Every clip is verified before the ZIP is published; failed batches do not expose partial archives.
 - Video output is H.264/AAC MP4. The resolution setting caps the short edge and preserves portrait/landscape shape without upscaling. MP3 defaults to 192 kbps; increasing bitrate does not improve the original source quality.
 
-Keep the server bound to localhost and use **one Uvicorn worker**. This is a personal local app, without account isolation or a distributed queue. Public deployment requires a separate security and hosting design.
+Keep the server bound to localhost and use **one Uvicorn worker**. This is a personal local app with browser-session download isolation, without user accounts or a distributed queue. Public deployment requires a separate security and hosting design.
 
 ## Development
 

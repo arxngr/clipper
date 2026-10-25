@@ -23,15 +23,13 @@ a { color: inherit; text-decoration: none; }
 [hidden] { display: none !important; }
 .icon { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
 .icon-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
-.site-header { max-width: 1120px; margin: auto; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; }
+.site-header { max-width: 792px; margin: auto; padding: 24px; display: flex; align-items: center; }
 .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 650; letter-spacing: -.4px; }
 .brand-mark { display: grid; place-items: center; width: 34px; height: 34px; color: #fff; background: var(--blue); border-radius: 10px; }
 .brand-mark .icon { width: 19px; height: 19px; }
 main { max-width: 792px; margin: auto; padding: 0 24px; }
-.intro { padding: 34px 0 28px; text-align: center; }
-h1 { margin: 0 0 12px; font-size: clamp(26px, 3.2vw, 36px); line-height: 1.25; letter-spacing: -1.25px; font-weight: 650; }
-h1 span { color: var(--blue); }
-.intro p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.6; }
+.intro { padding: 16px 0 18px; }
+h1 { margin: 0; font-size: 22px; line-height: 1.3; letter-spacing: -.6px; font-weight: 600; }
 .workspace { width: 100%; }
 .editor-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 28px; box-shadow: 0 8px 32px #18356606; }
 #download-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
@@ -90,14 +88,7 @@ input::placeholder { color: #77869d; opacity: 1; }
 .primary-button { display: flex; align-items: center; justify-content: center; gap: 9px; background: var(--blue); box-shadow: 0 3px 8px #2563eb18; color: #fff; border: 0; border-radius: 9px; padding: 15px 22px; min-height: 48px; font-size: 13px; font-weight: 600; white-space: nowrap; transition: background .15s; }
 .primary-button:hover:not(:disabled) { background: #1b52cf; }
 .primary-button .icon { width: 17px; height: 17px; }
-.library { margin-top: 30px; }
-.library-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-.library-heading h2 { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin: 0; }
-#job-count { font-size: 11px; background: #e5edfa; color: #506c96; border-radius: 5px; padding: 3px 6px; font-weight: 500; }
-#queue-status { font-size: 11px; color: var(--muted); }
-.empty-state { border: 1px dashed #cfdced; border-radius: 12px; padding: 24px; display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 90px; }
-.empty-icon { color: #7994ba; display: grid; place-items: center; }
-.empty-state h3 { margin: 0; font-size: 12px; font-weight: 400; color: var(--muted); }
+.current-download { margin-top: 20px; }
 .job-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
 .job { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--line); background: #fff; border-radius: 11px; }
 .job-type { display: grid; place-items: center; color: #527bc0; background: #edf4ff; border-radius: 8px; width: 38px; height: 42px; flex-shrink: 0; }
@@ -125,12 +116,10 @@ footer { display: flex; justify-content: space-between; gap: 24px; padding: 24px
 .toast { position: fixed; left: 50%; bottom: 25px; transform: translateX(-50%); background: #173663; color: #fff; padding: 14px 22px; font-size: 13px; max-width: calc(100% - 32px); border-radius: 9px; box-shadow: 0 5px 25px #142d5825; z-index: 10; }
 @keyframes progress { from { transform: translateX(-100%); } to { transform: translateX(400%); } }
 @media (max-width: 580px) {
-  .site-header { padding: 20px; }
-  .brand { font-size: 14px; }
+  .site-header { padding: 20px 16px; }
   main { padding: 0 16px; }
-  .intro { padding: 24px 0; }
-  h1 { font-size: 27px; letter-spacing: -.9px; }
-  .intro p { font-size: 14px; }
+  .intro { padding: 8px 0 16px; }
+  h1 { font-size: 20px; }
   .editor-card { padding: 20px; border-radius: 14px; }
   #download-form { grid-template-columns: 1fr; gap: 22px; }
   .source-section { padding-bottom: 20px; }

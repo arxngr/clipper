@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+from secrets import token_urlsafe
+from threading import RLock
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
@@ -57,6 +59,8 @@ def create_app(
     settings: Settings | None = None, service: JobService | None = None
 ) -> FastAPI:
     settings = settings or Settings.load()
+    owners: dict[str, str] = {}
+    owners_lock = RLock()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -66,7 +70,7 @@ def create_app(
         finally:
             app.state.jobs.close()
 
-    app = FastAPI(title="Video Downloader", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="Clipper", version="0.1.0", lifespan=lifespan)
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"],
@@ -86,6 +90,8 @@ def create_app(
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["Referrer-Policy"] = "no-referrer"
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; script-src 'self'; style-src 'self'; "
             "img-src 'self' https: data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'"
@@ -102,7 +108,11 @@ def create_app(
                 503, "FFmpeg is not set up. Run: python scripts/setup_tools.py"
             )
 
-    def find_job(job_id: str):
+    def find_job(job_id: str, request: Request):
+        owner = request.cookies.get("clipper_session")
+        with owners_lock:
+            if not owner or owners.get(job_id) != owner:
+                raise HTTPException(404, "Download not found.")
         job = app.state.jobs.repository.get(job_id)
         if not job:
             raise HTTPException(404, "Download not found.")
@@ -126,9 +136,10 @@ def create_app(
         return app.state.jobs.inspect(body.url).public()
 
     @app.post("/api/jobs", status_code=202)
-    def create_job(body: DownloadBody):
+    def create_job(body: DownloadBody, request: Request, response: Response):
         ready()
-        return app.state.jobs.create(
+        owner = request.cookies.get("clipper_session") or token_urlsafe(32)
+        job = app.state.jobs.create(
             DownloadRequest(
                 url=body.url,
                 format=body.format,
@@ -137,23 +148,26 @@ def create_app(
                 ranges=tuple(TimeRange(**clip.model_dump()) for clip in body.ranges),
             )
         )
-
-    @app.get("/api/jobs")
-    def list_jobs():
-        return app.state.jobs.repository.list()
+        with owners_lock:
+            owners[job["id"]] = owner
+        response.set_cookie(
+            "clipper_session", owner, httponly=True, samesite="strict",
+            secure=request.url.scheme == "https", path="/api",
+        )
+        return job
 
     @app.get("/api/jobs/{job_id}")
-    def get_job(job_id: str):
-        return find_job(job_id)
+    def get_job(job_id: str, request: Request):
+        return find_job(job_id, request)
 
     @app.post("/api/jobs/{job_id}/cancel")
-    def cancel_job(job_id: str):
-        find_job(job_id)
+    def cancel_job(job_id: str, request: Request):
+        find_job(job_id, request)
         return app.state.jobs.cancel(job_id)
 
     @app.get("/api/jobs/{job_id}/file")
-    def get_file(job_id: str):
-        job = find_job(job_id)
+    def get_file(job_id: str, request: Request):
+        job = find_job(job_id, request)
         path = app.state.jobs.artifact_path(job)
         media_type = {
             ".mp3": "audio/mpeg",

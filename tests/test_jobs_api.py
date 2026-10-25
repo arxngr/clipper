@@ -113,8 +113,8 @@ def test_cancelled_job_cannot_become_completed(service):
 def test_new_session_has_no_history():
     repository = InMemoryJobRepository()
     repository.create("old", DownloadRequest("https://example.com/video"))
-    assert repository.list()
-    assert InMemoryJobRepository().list() == []
+    assert repository.get("old")
+    assert InMemoryJobRepository().get("old") is None
 
 
 def test_repository_returns_independent_snapshots():
@@ -122,7 +122,6 @@ def test_repository_returns_independent_snapshots():
     job = repository.create("job", DownloadRequest("https://example.com/video"))
     job["request"]["url"] = "changed"
     repository.get("job")["request"]["url"] = "changed"
-    repository.list()[0]["request"]["url"] = "changed"
     assert repository.get("job")["request"]["url"] == "https://example.com/video"
 
 
@@ -133,11 +132,33 @@ def test_default_app_keeps_history_only_for_the_server_session(tmp_path):
         app.state.jobs.repository.create(
             "session-job", DownloadRequest("https://example.com/video")
         )
-        assert client.get("/api/jobs").json()[0]["id"] == "session-job"
+        assert client.get("/api/jobs").status_code == 405
     with TestClient(create_app(settings)) as client:
-        assert client.get("/api/jobs").json() == []
+        assert client.get("/api/jobs").status_code == 405
         assert client.get("/api/jobs/session-job").status_code == 404
     assert not (tmp_path / "jobs.sqlite3").exists()
+
+
+def test_download_access_is_private_to_the_creating_browser(service, tmp_path):
+    app = create_app(Settings(tmp_path, "ffmpeg", "ffprobe", None), service)
+    with TestClient(app) as owner:
+        response = owner.post("/api/jobs", json={"url": "https://example.com/video"})
+        assert response.status_code == 202
+        assert "HttpOnly" in response.headers["set-cookie"]
+        job_id = response.json()["id"]
+        wait_for(service.repository, job_id, {"completed"})
+        assert owner.get(f"/api/jobs/{job_id}").status_code == 200
+        assert owner.get(f"/api/jobs/{job_id}/file").status_code == 200
+        assert owner.get("/api/jobs").status_code == 405
+        stranger = TestClient(app)
+        try:
+            assert stranger.get("/api/jobs").status_code == 405
+            assert stranger.get(f"/api/jobs/{job_id}").status_code == 404
+            assert stranger.get(f"/api/jobs/{job_id}/file").status_code == 404
+            assert stranger.post(f"/api/jobs/{job_id}/cancel").status_code == 404
+            assert stranger.get(f"/api/jobs/{job_id}").headers["cache-control"] == "no-store"
+        finally:
+            stranger.close()
 
 
 def test_api_inspect_create_download_and_validation(service, tmp_path):
