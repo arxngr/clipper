@@ -15,7 +15,7 @@ from app.infrastructure.extractors import FallbackExtractor, NativeSocialExtract
 from app.infrastructure.media import FFmpegProcessor
 from app.infrastructure.network import PublicHttpClient
 from app.infrastructure.process import ProcessRunner
-from app.infrastructure.repository import SQLiteJobRepository
+from app.infrastructure.repository import InMemoryJobRepository
 from app.infrastructure.ytdlp import SourceDownloader, YtDlpAdapter
 
 WEB = Path(__file__).parent / "web"
@@ -44,7 +44,7 @@ def build_service(settings: Settings) -> JobService:
     http = PublicHttpClient(settings.max_download_bytes, settings.job_timeout)
     fallback = YtDlpAdapter(runner, settings)
     return JobService(
-        SQLiteJobRepository(settings.data_dir / "jobs.sqlite3"),
+        InMemoryJobRepository(),
         FallbackExtractor(NativeSocialExtractor(http), fallback),
         SourceDownloader(http, fallback),
         FFmpegProcessor(runner, settings),

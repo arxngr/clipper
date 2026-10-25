@@ -1,7 +1,6 @@
 import threading
 import time
 import zipfile
-from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -17,7 +16,7 @@ from app.domain.models import (
     SourceInfo,
     TimeRange,
 )
-from app.infrastructure.repository import SQLiteJobRepository
+from app.infrastructure.repository import InMemoryJobRepository
 
 
 class FixtureExtractor:
@@ -51,7 +50,7 @@ def wait_for(repository, job_id, statuses):
 @pytest.fixture
 def service(tmp_path):
     service = JobService(
-        SQLiteJobRepository(tmp_path / "jobs.db"),
+        InMemoryJobRepository(),
         FixtureExtractor(),
         FixtureDownloader(),
         FixtureProcessor(),
@@ -61,7 +60,7 @@ def service(tmp_path):
     service.close()
 
 
-def test_completed_artifact_and_persisted_history(service, tmp_path):
+def test_completed_artifact_and_session_history(service, tmp_path):
     job = service.create(
         DownloadRequest("https://example.com/video", ranges=(TimeRange(2, 8),))
     )
@@ -71,10 +70,9 @@ def test_completed_artifact_and_persisted_history(service, tmp_path):
     assert service.artifact_path(result).read_bytes() == b"verified artifact"
     assert "<" not in result["filename"]
     assert list((tmp_path / "tmp").iterdir()) == []
-    assert (
-        SQLiteJobRepository(tmp_path / "jobs.db").get(job["id"])["status"]
-        == "completed"
-    )
+    assert service.repository.get(job["id"])["status"] == "completed"
+    assert InMemoryJobRepository().get(job["id"]) is None
+    assert not list(tmp_path.glob("*.db"))
 
 
 def test_failed_job_never_publishes_an_artifact(service, tmp_path):
@@ -112,12 +110,34 @@ def test_cancelled_job_cannot_become_completed(service):
     assert service.repository.get(job["id"])["filename"] is None
 
 
-def test_restart_marks_unfinished_jobs_interrupted(tmp_path):
-    repository = SQLiteJobRepository(tmp_path / "jobs.db")
+def test_new_session_has_no_history():
+    repository = InMemoryJobRepository()
     repository.create("old", DownloadRequest("https://example.com/video"))
-    repository.interrupt_unfinished()
-    assert repository.get("old")["status"] == "failed"
-    assert "stopped" in repository.get("old")["error"]
+    assert repository.list()
+    assert InMemoryJobRepository().list() == []
+
+
+def test_repository_returns_independent_snapshots():
+    repository = InMemoryJobRepository()
+    job = repository.create("job", DownloadRequest("https://example.com/video"))
+    job["request"]["url"] = "changed"
+    repository.get("job")["request"]["url"] = "changed"
+    repository.list()[0]["request"]["url"] = "changed"
+    assert repository.get("job")["request"]["url"] == "https://example.com/video"
+
+
+def test_default_app_keeps_history_only_for_the_server_session(tmp_path):
+    settings = Settings(tmp_path, None, None, None)
+    app = create_app(settings)
+    with TestClient(app) as client:
+        app.state.jobs.repository.create(
+            "session-job", DownloadRequest("https://example.com/video")
+        )
+        assert client.get("/api/jobs").json()[0]["id"] == "session-job"
+    with TestClient(create_app(settings)) as client:
+        assert client.get("/api/jobs").json() == []
+        assert client.get("/api/jobs/session-job").status_code == 404
+    assert not (tmp_path / "jobs.sqlite3").exists()
 
 
 def test_api_inspect_create_download_and_validation(service, tmp_path):

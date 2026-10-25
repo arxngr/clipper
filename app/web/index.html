@@ -10,7 +10,7 @@
     />
     <title>Video Downloader</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/static/styles.css?v=4" />
+    <link rel="stylesheet" href="/static/styles.css?v=6" />
     <script src="/static/app.js?v=3" type="module"></script>
   </head>
   <body>
@@ -166,7 +166,8 @@
                   <svg class="icon"><use href="#i-scissors" /></svg>Trim clips
                 </button>
               </div>
-              <div id="range-controls" hidden>
+            </div>
+            <div id="range-controls" role="group" aria-label="Clip times" hidden>
                 <div class="range-column-labels" aria-hidden="true">
                   <span>CLIP</span><span>FROM</span><span></span><span>TO</span
                   ><span></span>
@@ -181,7 +182,6 @@
                 <p class="zip-hint" id="zip-hint" hidden>
                   <svg class="icon"><use href="#i-folder" /></svg>Clips are saved together in a ZIP.
                 </p>
-              </div>
             </div>
 
             <details class="quality-settings">
@@ -249,7 +249,7 @@
         /><span class="range-arrow" aria-hidden="true">→</span
         ><input
           class="range-end"
-          placeholder="End of video"
+          placeholder="To end"
           inputmode="text"
           aria-describedby="time-hint"
         /><button type="button" class="remove-range">

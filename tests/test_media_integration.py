@@ -17,7 +17,7 @@ from app.domain.models import (
     SourceInfo,
 )
 from app.application.jobs import JobService
-from app.infrastructure.repository import SQLiteJobRepository
+from app.infrastructure.repository import InMemoryJobRepository
 from app.infrastructure.media import FFmpegProcessor
 from app.infrastructure.process import ProcessRunner
 
@@ -186,7 +186,7 @@ def test_batch_zip_contains_separate_verified_media_files(
 
     downloader = LocalDownloader()
     service = JobService(
-        SQLiteJobRepository(tmp_path / "jobs.db"),
+        InMemoryJobRepository(),
         LocalExtractor(),
         downloader,
         processor,

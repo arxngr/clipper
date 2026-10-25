@@ -45,7 +45,6 @@ class JobService:
         )
         self._lock = threading.RLock()
         self._cancelled: dict[str, threading.Event] = {}
-        self.repository.interrupt_unfinished()
         # Only remove directories with application-generated IDs under our temp root.
         for path in self.temp_dir.iterdir():
             if path.is_dir() and re.fullmatch(r"[a-f0-9]{32}", path.name):

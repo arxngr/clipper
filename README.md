@@ -27,7 +27,7 @@ On macOS/Linux, use `.venv/bin/python` instead and install **FFmpeg (including f
 
 Times accept `2:30`, `01:02:30`, `2m`, or `150s`. Plain numbers mean seconds. Leave **To** blank to continue to the end. Quality options are under **Quality**.
 
-The queue runs one download at a time and supports cancellation and retries. History survives restarts; unfinished jobs are marked interrupted. Files are stored in `data/downloads/`; temporary files are cleaned after each job. Files and history remain until you remove them locally.
+The queue runs one download at a time and supports cancellation and retries. Download history is kept in memory for the current server session and clears when the app restarts. Save your files before restarting; previous downloads will no longer appear in the UI. Files remain in `data/downloads/` until you remove them locally; temporary files are cleaned after each job. Existing `data/jobs.sqlite3` files from older versions are no longer used.
 
 ## Site support and clipping
 
@@ -50,7 +50,7 @@ Node is only needed for frontend tests; the app itself needs no frontend build o
 ```text
 app/domain/          Download rules, models, and URL validation
 app/application/     Job use cases and dependency protocols
-app/infrastructure/  Native extractors, yt-dlp, FFmpeg, SQLite, processes, HTTP
+app/infrastructure/  Native extractors, yt-dlp, FFmpeg, session queue, processes, HTTP
 app/api.py           FastAPI routes and dependency composition
 app/web/             HTML, CSS, and JavaScript UI
 tests/               Domain, extractor, API, job, and real-media tests

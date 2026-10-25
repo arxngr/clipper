@@ -11,6 +11,7 @@
   font-synthesis: none;
 }
 * { box-sizing: border-box; }
+html { scrollbar-gutter: stable; }
 body { margin: 0; }
 button, input, select { font: inherit; }
 button, a, select { touch-action: manipulation; }
@@ -33,7 +34,7 @@ h1 span { color: var(--blue); }
 .intro p { margin: 0; font-size: 15px; color: var(--muted); line-height: 1.6; }
 .workspace { width: 100%; }
 .editor-card { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 28px; box-shadow: 0 8px 32px #18356606; }
-#download-form { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+#download-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .source-section, .quality-settings, .form-error, .download-action { grid-column: 1 / -1; }
 .section-title { display: block; font-size: 13px; font-weight: 600; margin-bottom: 11px; }
 .source-section { padding-bottom: 23px; border-bottom: 1px solid var(--line); }
@@ -65,11 +66,9 @@ input::placeholder { color: #77869d; opacity: 1; }
 .segmented button { flex: 1; border: 0; background: none; color: #566984; font-size: 12px; padding: 10px 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
 .segmented button .icon { width: 15px; height: 15px; }
 .segmented button.active { color: #2056b4; background: #fff; font-weight: 600; box-shadow: 0 1px 4px #253f671a; }
-/* Clip rows span the form so time fields stay comfortable to edit. */
-#download-form:has(#range-controls:not([hidden])) .clip-section { grid-column: 1 / -1; }
-#download-form:has(#range-controls:not([hidden])) .clip-section .segmented { max-width: 320px; min-height: 46px; }
+#range-controls { grid-column: 1 / -1; min-width: 0; border-top: 1px solid var(--line); padding-top: 20px; }
 .range-column-labels, .range-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) 18px minmax(0, 1fr) 40px; gap: 9px; align-items: center; }
-.range-column-labels { margin: 20px 0 8px; font-size: 10px; letter-spacing: .6px; color: var(--muted); }
+.range-column-labels { margin: 0 0 8px; font-size: 10px; letter-spacing: .6px; color: var(--muted); }
 .range-row { margin-top: 9px; }
 .clip-number { font-size: 11px; color: #456998; background: #edf3ff; border-radius: 6px; height: 28px; width: 28px; display: grid; place-items: center; }
 .range-row input { width: 100%; min-width: 0; font-family: Consolas, monospace; font-size: 14px; padding: 12px; border: 1px solid #d6e0ef; color: #304868; border-radius: 8px; background: #fcfdff; }
@@ -141,7 +140,6 @@ footer { display: flex; justify-content: space-between; gap: 24px; padding: 24px
   #inspect-button { padding: 11px; }
   .format-card { padding: 13px; }
   .segmented { min-height: 46px; }
-  #download-form:has(#range-controls:not([hidden])) .clip-section .segmented { max-width: none; }
   .range-column-labels, .range-row { grid-template-columns: 25px minmax(0, 1fr) 12px minmax(0, 1fr) 32px; gap: 5px; }
   .range-row input { padding: 12px 8px; font-size: 16px; }
   .clip-number { width: 23px; height: 26px; }
