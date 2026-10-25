@@ -10,8 +10,8 @@
     />
     <title>Video Downloader</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="/static/styles.css" />
-    <script src="/static/app.js" type="module"></script>
+    <link rel="stylesheet" href="/static/styles.css?v=4" />
+    <script src="/static/app.js?v=3" type="module"></script>
   </head>
   <body>
     <svg
@@ -64,22 +64,11 @@
           ><svg class="icon"><use href="#i-download" /></svg></span
         >Video Downloader</a
       >
-      <span id="connection" class="connection"
-        ><span class="status-dot"></span
-        ><span id="connection-text">Connecting</span></span
-      >
     </header>
     <main>
       <section class="intro">
-        <div class="intro-label">YOUR MEDIA, ON YOUR MACHINE</div>
-        <h1>One video. <span>Any part of it.</span></h1>
-        <p>
-          Download the whole thing, pick a few clips, or keep just the audio.
-        </p>
-        <div class="platforms">
-          <span>YouTube</span><span>Instagram</span><span>TikTok</span
-          ><span class="more-platforms">and more</span>
-        </div>
+        <h1>Download a <span>video.</span></h1>
+        <p>Save the full video, a clip, or audio.</p>
       </section>
       <div id="setup-notice" class="notice" hidden>
         Media tools need setup. Run <code>python scripts/setup_tools.py</code>,
@@ -98,15 +87,12 @@
                   type="url"
                   required
                   maxlength="4096"
-                  placeholder="Paste a video URL"
+                  placeholder="Paste a video link"
                   autocomplete="off"
                   spellcheck="false"
-                /><button id="inspect-button" type="button">Get details</button>
+                /><button id="inspect-button" type="button">Preview</button>
               </div>
-              <p class="field-hint">
-                Paste a link from YouTube, Instagram, TikTok, or another
-                supported site.
-              </p>
+              <p class="field-hint">YouTube, Instagram, TikTok &amp; more</p>
               <div id="source-preview" class="source-preview" hidden>
                 <div class="preview-image">
                   <svg class="icon"><use href="#i-film" /></svg>
@@ -136,7 +122,7 @@
                   <svg class="icon"><use href="#i-film" /></svg
                   ><span
                     ><strong>Video</strong
-                    ><small>MP4 · Picture and sound</small></span
+                    ><small>MP4</small></span
                   ><span class="radio-dot"></span></button
                 ><button
                   class="format-card"
@@ -146,7 +132,7 @@
                 >
                   <svg class="icon"><use href="#i-music" /></svg
                   ><span
-                    ><strong>Audio</strong><small>MP3 · Sound only</small></span
+                    ><strong>Audio</strong><small>MP3</small></span
                   ><span class="radio-dot"></span>
                 </button>
               </div>
@@ -155,7 +141,7 @@
             <div class="field-section clip-section">
               <div class="section-heading">
                 <span class="section-title" id="clips-heading"
-                  >What do you want to save?</span
+                  >Length</span
                 >
               </div>
               <div
@@ -177,7 +163,7 @@
                   data-range-mode="clips"
                   aria-pressed="false"
                 >
-                  <svg class="icon"><use href="#i-scissors" /></svg>Select clips
+                  <svg class="icon"><use href="#i-scissors" /></svg>Trim clips
                 </button>
               </div>
               <div id="range-controls" hidden>
@@ -187,22 +173,20 @@
                 </div>
                 <div id="range-list"></div>
                 <button id="add-range" type="button" class="add-range">
-                  <svg class="icon"><use href="#i-plus" /></svg>Add another
-                  range
+                  <svg class="icon"><use href="#i-plus" /></svg>Add clip
                 </button>
                 <p class="field-hint" id="time-hint">
-                  Use mm:ss or hh:mm:ss. You can also enter 2m or 120s.
+                  Use minutes:seconds. Leave the end blank to keep the rest.
                 </p>
                 <p class="zip-hint" id="zip-hint" hidden>
-                  <svg class="icon"><use href="#i-folder" /></svg>Each range is
-                  a separate clip. You’ll get them together in one ZIP.
+                  <svg class="icon"><use href="#i-folder" /></svg>Clips are saved together in a ZIP.
                 </p>
               </div>
             </div>
 
             <details class="quality-settings">
               <summary>
-                Quality settings<span id="quality-caption">1080p</span>
+                Quality<span id="quality-caption">1080p</span>
               </summary>
               <div class="quality-row">
                 <label id="quality-label" for="quality">Video resolution</label
@@ -220,60 +204,23 @@
                   <option value="320">320 kbps</option>
                 </select>
               </div>
-              <p class="field-hint">Original aspect ratio. No upscaling.</p>
+              <p class="field-hint">Keeps the original video shape.</p>
             </details>
             <p id="form-error" class="form-error" role="alert" hidden></p>
+            <div class="download-action">
+              <p id="download-summary" class="download-summary" aria-live="polite">MP4 · 1080p · Full video</p>
+              <button id="submit-button" class="primary-button" type="submit">
+                <svg class="icon"><use href="#i-download" /></svg><span>Download video</span>
+              </button>
+            </div>
           </form>
         </section>
-
-        <aside class="output-card" aria-labelledby="output-heading">
-          <div class="output-card-top">
-            <span class="output-symbol"
-              ><svg id="output-icon" class="icon">
-                <use href="#i-film" /></svg></span
-            ><span class="output-tag" id="file-extension">MP4</span>
-            <h2 id="output-heading">Ready when you are.</h2>
-            <p id="output-description">
-              Choose your format and the parts you want to keep.
-            </p>
-          </div>
-          <div class="output-card-bottom">
-            <dl class="output-details">
-              <div>
-                <dt>Format</dt>
-                <dd id="summary-format">MP4 video</dd>
-              </div>
-              <div>
-                <dt>Quality</dt>
-                <dd id="summary-quality">Up to 1080p</dd>
-              </div>
-              <div>
-                <dt>Files</dt>
-                <dd id="summary-files">1 video</dd>
-              </div>
-              <div>
-                <dt>Total duration</dt>
-                <dd id="summary-duration">Full video</dd>
-              </div>
-            </dl>
-            <button
-              id="submit-button"
-              class="primary-button"
-              type="submit"
-              form="download-form"
-            >
-              <svg class="icon"><use href="#i-download" /></svg
-              ><span>Start download</span>
-            </button>
-            <p class="output-note">Processed locally. Saved to your machine.</p>
-          </div>
-        </aside>
       </div>
 
       <section class="library" aria-labelledby="library-heading">
         <div class="library-heading">
           <h2 id="library-heading">Downloads <span id="job-count">0</span></h2>
-          <span id="queue-status">Queue is empty</span>
+          <span id="queue-status">No active downloads</span>
         </div>
         <div id="jobs" class="job-list"></div>
         <div id="empty-state" class="empty-state">
@@ -281,14 +228,13 @@
             ><svg class="icon"><use href="#i-download" /></svg
           ></span>
           <div>
-            <h3>No downloads yet</h3>
-            <p>Your files and download progress will appear here.</p>
+            <h3>Your downloads will appear here</h3>
           </div>
         </div>
       </section>
       <footer>
-        <span>Runs locally. Your files stay with you.</span
-        ><span>Download content you have permission to save.</span>
+        <span>Saved on this device</span
+        ><span>Only save content you have permission to download.</span>
       </footer>
     </main>
     <div id="toast" class="toast" role="status" hidden></div>

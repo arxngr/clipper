@@ -20,12 +20,12 @@ On macOS/Linux, use `.venv/bin/python` instead and install **FFmpeg (including f
 
 ## Use
 
-1. Paste a single video URL. **Get details** optionally reads its title and duration.
+1. Paste a single video URL. **Preview** optionally reads its title and duration.
 2. Choose **Video / MP4** or **Audio / MP3** and the output quality.
-3. Choose **Full video** or **Select clips**. Add a From/To row for each clip, for example `01:00–02:00` and `10:00–15:00`. Up to 20 ranges are supported, in your listed order.
+3. Choose **Full video** or **Trim clips**. Add a From/To row for each clip, for example `01:00–02:00` and `10:00–15:00`. Up to 20 ranges are supported, in your listed order.
 4. Start the download. One range produces an MP4/MP3; multiple ranges produce separate clips inside one ZIP. Click **Save file** or **Save ZIP** when ready.
 
-Times accept `2:30`, `01:02:30`, `2m`, or `150s`. Plain numbers mean seconds. Leave **To** blank to continue to the end. Quality options are under **Quality settings**.
+Times accept `2:30`, `01:02:30`, `2m`, or `150s`. Plain numbers mean seconds. Leave **To** blank to continue to the end. Quality options are under **Quality**.
 
 The queue runs one download at a time and supports cancellation and retries. History survives restarts; unfinished jobs are marked interrupted. Files are stored in `data/downloads/`; temporary files are cleaned after each job. Files and history remain until you remove them locally.
 

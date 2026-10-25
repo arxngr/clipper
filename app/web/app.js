@@ -45,7 +45,8 @@ function showError(message) {
 }
 
 function updateSubmitButton() {
-  $("#submit-button").disabled = !state.ready || state.submitting || !state.validRanges;
+  $("#submit-button").disabled =
+    !state.ready || state.submitting || !state.validRanges || !$("#url").value.trim();
 }
 
 function requestBody() {
@@ -91,30 +92,10 @@ function renderRanges() {
 
 function updateSummary() {
   const audio = state.format === "mp3";
+  $("#full-mode").textContent = audio ? "Full audio" : "Full video";
   const custom = state.mode === "clips";
   const count = custom ? state.ranges.length : 1;
   const batch = count > 1;
-  $("#file-extension").textContent = batch ? "ZIP" : audio ? "MP3" : "MP4";
-  $("#output-icon use").setAttribute(
-    "href",
-    batch ? "#i-folder" : audio ? "#i-music" : "#i-film",
-  );
-  $("#output-heading").textContent = "Download summary";
-  $("#output-description").textContent = batch
-    ? "Separate clips, packaged in one ZIP file."
-    : "Your file will be prepared locally.";
-  $("#summary-format").textContent =
-    `${audio ? "MP3 audio" : "MP4 video"}${batch ? " · ZIP" : ""}`;
-  $("#summary-quality").textContent = audio
-    ? `${$("#bitrate").value} kbps`
-    : `Up to ${$("#quality").value}p`;
-  $("#summary-files").textContent = batch
-    ? `${count} separate clips`
-    : custom
-      ? "1 clip"
-      : audio
-        ? "1 audio file"
-        : "1 video";
   $("#quality-caption").textContent = audio
     ? `${$("#bitrate").value} kbps`
     : `${$("#quality").value}p`;
@@ -125,10 +106,12 @@ function updateSummary() {
   $("#range-controls").hidden = !custom;
   $("#zip-hint").hidden = !batch;
   $("#submit-button span").textContent = state.submitting
-    ? "Adding to queue…"
+    ? "Adding download…"
     : batch
       ? `Download ${count} clips`
-      : "Start download";
+      : custom
+        ? "Download clip"
+        : audio ? "Download audio" : "Download video";
   try {
     const { ranges } = requestBody();
     const durations = ranges.map((range) =>
@@ -141,16 +124,18 @@ function updateSummary() {
         ? null
         : durations.reduce((sum, value) => sum + value, 0)
       : state.source?.duration;
-    $("#summary-duration").textContent =
-      duration != null
-        ? timeLabel(duration)
-        : custom
-          ? "To end of video"
-          : "Full video";
+    const length = duration != null
+      ? timeLabel(duration)
+      : custom ? "To end" : audio ? "Full audio" : "Full video";
+    $("#download-summary").textContent = [
+      audio ? "MP3" : "MP4",
+      audio ? `${$("#bitrate").value} kbps` : `${$("#quality").value}p`,
+      batch ? `${count} clips · ${length} · ZIP` : length,
+    ].join(" · ");
     showError("");
     state.validRanges = true;
   } catch (error) {
-    $("#summary-duration").textContent = "Check ranges";
+    $("#download-summary").textContent = "Check clip times";
     showError(error.message);
     state.validRanges = false;
   }
@@ -224,7 +209,7 @@ $("#inspect-button").addEventListener("click", async () => {
   const controller = new AbortController();
   inspection = controller;
   $("#inspect-button").disabled = true;
-  $("#inspect-button").textContent = "Reading…";
+  $("#inspect-button").textContent = "Loading…";
   showError("");
   try {
     const source = await api("/inspect", {
@@ -261,7 +246,7 @@ $("#inspect-button").addEventListener("click", async () => {
   } finally {
     if (inspection === controller) {
       $("#inspect-button").disabled = false;
-      $("#inspect-button").textContent = "Get details";
+      $("#inspect-button").textContent = "Preview";
     }
   }
 });
@@ -347,6 +332,7 @@ function renderJobs() {
       link.download = job.filename;
       link.dataset.action = "save";
       link.querySelector("span").textContent = batch ? "Save ZIP" : "Save file";
+      link.setAttribute("aria-label", `${batch ? "Save ZIP" : "Save file"}: ${job.title}`);
     } else {
       const action = terminal.has(job.status) ? "retry" : "cancel";
       const button = element.querySelector(`.${action}-button`);
@@ -367,7 +353,7 @@ function renderJobs() {
   const active = state.jobs.filter((job) => !terminal.has(job.status)).length;
   $("#queue-status").textContent = active
     ? `${active} ${active === 1 ? "download" : "downloads"} in progress`
-    : "Queue is empty";
+    : "No active downloads";
 }
 
 $("#jobs").addEventListener("click", async (event) => {
@@ -401,16 +387,9 @@ async function refreshHealth() {
   try {
     const health = await api("/health");
     state.ready = health.ready;
-    $("#connection").className =
-      `connection ${health.ready ? "ready" : "offline"}`;
-    $("#connection-text").textContent = health.ready
-      ? "Local & ready"
-      : "Setup needed";
     $("#setup-notice").hidden = health.ready;
   } catch {
     state.ready = false;
-    $("#connection").className = "connection offline";
-    $("#connection-text").textContent = "Reconnecting";
   }
   updateSubmitButton();
 }
